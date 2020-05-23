@@ -1,0 +1,100 @@
+USE ap_DB;
+GO
+---------------------
+SELECT VendorName, InvoiceNumber, InvoiceDate,
+	   InvoiceLineItemAmount AS LineItemAmount, AccountDescription
+	   FROM Vendors
+	   INNER JOIN Invoices ON Vendors.VendorID = Invoices.VendorID
+	   INNER JOIN InvoiceLineItems
+		ON Invoices.InvoiceID = InvoiceLineItems.InvoiceID
+	   INNER JOIN GLAccounts ON InvoiceLineItems.AccountNO = GLAccounts.AccountNo
+	   WHERE InvoiceTotal - PaymentTotal - CreditTotal > 0
+	   ORDER BY VendorName, LineItemAmount DESC;
+     
+SELECT SUM(invoiceLineItemAmount) AS totalLineItems,
+    COUNT(invoiceLineItemAmount) AS numSummed
+FROM invoiceLineItems AS ili INNER JOIN invoices AS i
+ON i.InvoiceID = ili.InvoiceID
+GROUP BY i.InvoiceNumber
+HAVING COUNT(i.InvoiceNumber) > 1
+ORDER BY numSummed;
+
+SELECT i.invoiceID AS invoiceID1, i2.InvoiceID AS invoiceID2, AccountNo
+FROM invoices AS i INNER JOIN invoices AS i2
+		ON i.InvoiceID = i2.InvoiceID
+	INNER JOIN GLAccounts AS gla
+		ON gla.AccountNo = i.InvoiceID
+		AND gla.AccountNo = i2.InvoiceID;
+    
+SELECT vendorID
+FROM Vendors AS v
+WHERE NOT EXISTS
+(
+	SELECT invoiceID
+	FROM invoices AS i
+	WHERE i.vendorID = v.VendorID
+);
+
+SELECT vendorName, SUM(invoiceTotal) AS sumInvoiceTotal
+FROM invoices AS i
+INNER JOIN Vendors AS v
+		ON i.vendorID = v.vendorID
+GROUP BY vendorName
+ORDER BY sumInvoiceTotal DESC;
+
+SELECT vendorName, invoiceNumber, STDEV(invoiceTotal)
+FROM Vendors 
+WHERE 
+(
+	SELECT AVG(invoiceTotal)
+	FROM invoices
+);
+
+SELECT vendorName, invoiceNumber
+FROM 
+(
+	SELECT AVG(invoiceTotal)
+	FROM invoices
+	HAVING STDEV(invoiceTotal) > 1;
+) AS x
+WHERE x.vendorid = v.vendorID
+ORDER BY vendorName;
+
+SELECT vendorID, invoiceNumber, invoiceTotal
+FROM invoices
+WHERE invoiceTotal < ALL
+(
+	SELECT AVG(invoiceTotal)
+	FROM invoices AS i
+	INNER JOIN Vendors AS v
+	ON i.VendorID = v.vendorID
+)
+ORDER BY vendorID, invoiceTotal;
+
+
+SELECT invoiceID, CAST(invoiceDate AS VARCHAR(10))
+	   + ' ' 
+	   + CAST(paymentDate AS VARCHAR(10)) AS invPayDates
+FROM invoices
+WHERE paymentDate IS NOT NULL;
+
+SELECT invoiceID, invoiceTotal, FLOOR(invoiceTotal) AS dollars,
+	   invoiceTotal % 1 AS cents
+FROM Invoices;
+
+SELECT invoiceNumber, paymentDate AS monthlyPaymentDate
+FROM Invoices
+WHERE paymentDate IS NOT NULL
+	AND DATEDIFF(day, paymentDate, GETDATE() ) < 30;
+  
+  
+
+
+
+
+
+
+
+
+
+     
