@@ -1,0 +1,79 @@
+USE scratch_DB;
+GO
+
+IF OBJECT_ID('pets') IS NOT NULL
+DROP TABLE pets;
+
+IF OBJECT_ID('owners') IS NOT NULL
+DROP TABLE owners;
+
+GO
+---------------------------------
+CREATE TABLE owners
+(
+	o_opn	CHAR(4),
+	o_name	VARCHAR(16),
+	o_str	VARCHAR(24),
+	o_city	VARCHAR(16),
+	o_state	CHAR(2),
+	o_zip	CHAR(5),
+	o_phone	CHAR(7) DEFAULT 0,
+	--
+	CONSTRAINT owners_PK PRIMARY KEY(o_opn),
+	CONSTRAINT null_o_name CHECK(o_name IS NOT NULL)
+
+);
+--
+GO
+---------------------------------
+CREATE TABLE pets
+(
+	p_id	CHAR(4),
+	p_vac	DATETIME,
+	p_name	VARCHAR(16),
+	o_opn	CHAR(4),
+	--
+	CONSTRAINT pets_PK PRIMARY KEY(p_id),
+	CONSTRAINT pets_owners_FK FOREIGN KEY(o_opn) REFERENCES owners(o_opn)
+);
+--
+GO
+
+INSERT INTO owners (o_opn, o_name, o_str, o_city, o_state, o_zip)
+	VALUES	('AXK9', 'Bob', '123 4th St', 'Frisco', 'TX', '76398');
+
+INSERT INTO owners (o_opn, o_name, o_str, o_city, o_state, o_zip)
+	VALUES	('B5T6', 'Jane', '234 5th St', 'Plano', 'TX', '76345');
+
+INSERT INTO owners (o_opn, o_name, o_str, o_city, o_state, o_zip)
+	VALUES	('T123', 'John', '345 6th St', 'Denton', 'TX', '76209');
+	       
+INSERT INTO owners (o_opn, o_name, o_str, o_city, o_state, o_zip)
+	VALUES	('49YA', 'Sally', '456 7th St', 'Dallas', 'TX', '76452');
+
+INSERT INTO owners (o_opn, o_name, o_str, o_city, o_state, o_zip)
+	VALUES  ('6722', 'Joe', '567 8th St', 'Frisco', 'TX', '76398');
+
+
+INSERT INTO pets (p_id, p_name, p_vac, o_opn)
+	VALUES ('6733', 'Phang', '2016-01-18', '6722');
+		   
+INSERT INTO pets (p_id, p_name, p_vac, o_opn)
+	VALUES('R45E', 'Phydeaux', '2016-02-22', '49YA');
+		   
+INSERT INTO pets (p_id, p_name, p_vac, o_opn)
+	VALUES	('7Y77', 'Phreemont', '2016-01-19', '49YA');
+
+INSERT INTO pets (p_id, p_name, p_vac, o_opn)
+	VALUES	('8765', 'Spot', '2016-05-01', 'T123');
+
+INSERT INTO pets (p_id, p_name, p_vac, o_opn)
+	VALUES	('775R', 'Burkley', '2015-12-22', 'AXK9');
+
+UPDATE owners
+	SET o_zip = '76309'
+	WHERE o_city = 'Frisco';
+
+DELETE FROM pets
+	WHERE p_vac < '2015-12-31';
+
